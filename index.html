@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bouncing Balls</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f7f7f7;
+        }
+        canvas {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+    // 获取 canvas 元素并设置其宽度和高度
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // 定义 Ball 类
+    class Ball {
+        constructor(x, y, diameter, color) {
+            this.x = x;
+            this.y = y;
+            this.diameter = diameter;
+            this.color = color;
+            this.xSpeed = (Math.random() * 7) - 3.5;
+            this.ySpeed = (Math.random() * 7) - 3.5;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.fillStyle = this.color;
+            ctx.arc(this.x, this.y, this.diameter, 0, Math.PI * 2, false);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        update() {
+            this.x += this.xSpeed;
+            this.y += this.ySpeed;
+
+            if (this.x < this.diameter / 2 || this.x > canvas.width - this.diameter / 2) {
+                this.xSpeed *= -1;
+            }
+            if (this.y < this.diameter / 2 || this.y > canvas.height - this.diameter / 2) {
+                this.ySpeed *= -1;
+            }
+
+            this.draw();
+        }
+
+        // 检测球的边界
+        getBounds() {
+            return {
+                x1: this.x - this.diameter / 2,
+                y1: this.y - this.diameter / 2,
+                x2: this.x + this.diameter / 2,
+                y2: this.y + this.diameter / 2,
+            };
+        }
+    }
+
+    // 检测两个球是否碰撞
+    function intersects(b1, b2) {
+        return b1.x1 < b2.x2 && b1.x2 > b2.x1 && b1.y1 < b2.y2 && b1.y2 > b2.y1;
+    }
+
+    // 创建球的实例
+    const balls = [];
+    const ballCount = 25;
+    for (let i = 0; i < ballCount; i++) {
+        const ball = new Ball(
+            canvas.width / 2,
+            canvas.height / 2,
+            20,
+            `hsla(${Math.random() * 360}, 100%, 50%, 0.7)`
+        );
+        balls.push(ball);
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = 0; i < balls.length; i++) {
+            for (let j = i + 1; j < balls.length; j++) {
+                if (intersects(balls[i].getBounds(), balls[j].getBounds())) {
+                    balls[i].color = `hsla(${Math.random() * 360}, 100%, 50%, 0.7)`;
+                    balls[j].color = `hsla(${Math.random() * 360}, 100%, 50%, 0.7)`;
+                }
+            }
+            balls[i].update();
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    animate();
+</script>
+</body>
+</html>
